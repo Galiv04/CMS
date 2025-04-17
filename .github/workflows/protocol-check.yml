@@ -1,0 +1,36 @@
+name: Protocol Approval
+on:
+  pull_request:
+    branches: [ "MCI-*" ]
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate branch pattern
+        run: |
+          if [[ ! "$GITHUB_HEAD_REF" =~ ^MCI-[0-9]{3}$ ]]; then
+            echo "::error::Branch name must follow MCI-XXX format"
+            exit 1
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Validate YAML
+        run: |
+          pip install pyyaml
+          python scripts/validate.py protocols/${GITHUB_HEAD_REF}/*.yaml
+
+  approval-check:
+    needs: validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-ecosystem/action-required-labels@v1
+        with:
+          labels: "approved-by-engineering,approved-by-qa"
+
