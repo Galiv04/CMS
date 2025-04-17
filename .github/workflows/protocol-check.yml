@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Validate branch pattern
         run: |
           if [[ ! "$GITHUB_HEAD_REF" =~ ^MCI-[0-9]{3}$ ]]; then
@@ -40,7 +40,10 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions-ecosystem/action-required-labels@v1
+      - uses: mheap/github-action-required-labels@v5
         with:
-          labels: "approved-by-engineering,approved-by-qa"
-
+          mode: minimum
+          count: 2
+          labels: |
+            approved-by-engineering
+            approved-by-qa
