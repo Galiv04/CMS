@@ -1,6 +1,7 @@
 import yaml
 import sys
 from pathlib import Path
+import chardet  # Libreria per rilevare la codifica
 
 REQUIRED_FIELDS = {
     "id": str,
@@ -9,11 +10,23 @@ REQUIRED_FIELDS = {
     "approvals": list
 }
 
+def detect_encoding(file_path):
+    """Rileva la codifica del file."""
+    with open(file_path, 'rb') as f:
+        raw_data = f.read()
+    result = chardet.detect(raw_data)
+    return result['encoding']
+
 def validate_file(path: Path):
     try:
-        with open(path) as f:
+        # Rileva la codifica del file
+        encoding = detect_encoding(path)
+        
+        # Leggi il file con la codifica rilevata
+        with open(path, encoding=encoding) as f:
             data = yaml.safe_load(f)
             
+        # Valida i campi richiesti
         for field, dtype in REQUIRED_FIELDS.items():
             if field not in data:
                 raise ValueError(f"Missing required field: {field}")
